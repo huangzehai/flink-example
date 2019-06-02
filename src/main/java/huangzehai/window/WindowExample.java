@@ -1,12 +1,12 @@
 package huangzehai.window;
 
 import huangzehai.model.VehicleEvent;
-import huangzehai.sink.ConsoleSink;
 import huangzehai.source.CsvSource;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -26,7 +26,7 @@ public class WindowExample {
                 elements.forEach(out::collect);
             }
         });
-        process.addSink(new ConsoleSink<>());
+        process.addSink(new PrintSinkFunction<>());
         env.execute("Window Example");
     }
 }
