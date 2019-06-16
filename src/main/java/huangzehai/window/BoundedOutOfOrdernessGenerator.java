@@ -6,7 +6,7 @@ import org.apache.flink.streaming.api.watermark.Watermark;
 
 public class BoundedOutOfOrdernessGenerator implements AssignerWithPeriodicWatermarks<VehicleEvent> {
 
-    private final long maxOutOfOrderness = 3500; // 3.5 seconds
+    private final long maxOutOfOrderness = 3000; // 3.5 seconds
 
     private long currentMaxTimestamp;
 

@@ -2,7 +2,7 @@ package huangzehai.model;
 
 import java.time.LocalDateTime;
 
-public class VehicleEvent {
+public class VehicleEvent implements Comparable<VehicleEvent> {
     private int id;
     private String vin;
     private LocalDateTime dateTime;
@@ -68,5 +68,10 @@ public class VehicleEvent {
                 ", event='" + event + '\'' +
                 ", alerts='" + alerts + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(VehicleEvent o) {
+        return Long.compare(this.timestamp, o.timestamp);
     }
 }

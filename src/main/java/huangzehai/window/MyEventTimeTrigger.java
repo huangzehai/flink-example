@@ -4,16 +4,16 @@ import org.apache.flink.streaming.api.windowing.triggers.Trigger;
 import org.apache.flink.streaming.api.windowing.triggers.TriggerResult;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MyEventTimeTrigger<T> extends Trigger<T, TimeWindow> {
     private static final long serialVersionUID = 1L;
 
+    private Map<Long, Long> map = new ConcurrentHashMap<>();
+    private final long TIMEOUT = 3000;
 
-    private AtomicLong lastProcessingTimer = new AtomicLong(0);
-    private final long TIMEOUT = 10000;
-
-    public MyEventTimeTrigger() {
+    private MyEventTimeTrigger() {
     }
 
     @Override
@@ -24,7 +24,7 @@ public class MyEventTimeTrigger<T> extends Trigger<T, TimeWindow> {
         } else {
             ctx.registerEventTimeTimer(window.maxTimestamp());
             long time = ctx.getCurrentProcessingTime() + TIMEOUT;
-            lastProcessingTimer.set(time);
+            map.put(window.getStart(), time);
             ctx.registerProcessingTimeTimer(time);
             return TriggerResult.CONTINUE;
         }
@@ -39,7 +39,9 @@ public class MyEventTimeTrigger<T> extends Trigger<T, TimeWindow> {
 
     @Override
     public TriggerResult onProcessingTime(long time, TimeWindow window, TriggerContext ctx) throws Exception {
-        if (time == lastProcessingTimer.get()) {
+        Long timestamp = map.get(window.getStart());
+        if (timestamp != null && time == timestamp) {
+            map.remove(window.getStart());
             return TriggerResult.FIRE;
         }
         return TriggerResult.CONTINUE;
@@ -78,7 +80,7 @@ public class MyEventTimeTrigger<T> extends Trigger<T, TimeWindow> {
      * <p>Once the trigger fires all elements are discarded. Elements that arrive late immediately
      * trigger window evaluation with just this one element.
      */
-    public static MyEventTimeTrigger create() {
-        return new MyEventTimeTrigger();
+    public static <T> MyEventTimeTrigger<T> create() {
+        return new MyEventTimeTrigger<>();
     }
 }
