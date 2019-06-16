@@ -2,8 +2,15 @@ package huangzehai.window;
 
 import huangzehai.model.VehicleEvent;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
+import org.apache.flink.util.Collector;
 
 import java.util.Properties;
 
@@ -24,7 +31,15 @@ public class KafkaWindowExample {
                 new FlinkKafkaConsumer010<>("rfid", new VehicleEventSchema(), properties);
         kafkaConsumer.setStartFromEarliest();
         kafkaConsumer.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessGenerator());
-        env.addSource(kafkaConsumer).print();
+        DataStreamSource<VehicleEvent> vehicleEvents = env.addSource(kafkaConsumer);
+        vehicleEvents.print("before window: ");
+        SingleOutputStreamOperator<Object> process = vehicleEvents.keyBy(VehicleEvent::getVin).window(TumblingEventTimeWindows.of(Time.seconds(3))).trigger(new MyEventTimeTrigger<>()).process(new ProcessWindowFunction<VehicleEvent, Object, String, TimeWindow>() {
+            @Override
+            public void process(String s, Context context, Iterable<VehicleEvent> iterable, Collector<Object> collector) throws Exception {
+                iterable.forEach(collector::collect);
+            }
+        });
+        process.print("after window: ");
         env.execute(KafkaWindowExample.class.getSimpleName());
     }
 
