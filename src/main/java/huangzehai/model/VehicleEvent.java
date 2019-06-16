@@ -6,6 +6,7 @@ public class VehicleEvent {
     private int id;
     private String vin;
     private LocalDateTime dateTime;
+    private long timestamp;
     private String event;
     private String alerts;
 
@@ -49,12 +50,21 @@ public class VehicleEvent {
         this.alerts = alerts;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public String toString() {
         return "VehicleEvent{" +
                 "id=" + id +
                 ", vin='" + vin + '\'' +
                 ", dateTime=" + dateTime +
+                ", timestamp=" + timestamp +
                 ", event='" + event + '\'' +
                 ", alerts='" + alerts + '\'' +
                 '}';
