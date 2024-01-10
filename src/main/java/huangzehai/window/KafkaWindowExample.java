@@ -8,12 +8,10 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.triggers.ContinuousEventTimeTrigger;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.util.Collector;
 
-import java.time.LocalDateTime;
 import java.util.Properties;
 import java.util.stream.StreamSupport;
 
@@ -30,8 +28,8 @@ public class KafkaWindowExample {
         Properties properties = new Properties();
         properties.setProperty("bootstrap.servers", "192.168.0.104:9092");
         properties.setProperty("group.id", "test");
-        FlinkKafkaConsumer010<VehicleEvent> kafkaConsumer =
-                new FlinkKafkaConsumer010<>("rfid", new VehicleEventSchema(), properties);
+        FlinkKafkaConsumer<VehicleEvent> kafkaConsumer =
+                new FlinkKafkaConsumer<>("rfid", new VehicleEventSchema(), properties);
         kafkaConsumer.setStartFromEarliest();
         kafkaConsumer.assignTimestampsAndWatermarks(new BoundedOutOfOrdernessGenerator());
         DataStreamSource<VehicleEvent> vehicleEvents = env.addSource(kafkaConsumer);
